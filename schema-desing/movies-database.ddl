@@ -32,11 +32,6 @@ CREATE TABLE content.person_film_work (
     created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_person_film_person
-ON content.person_film_work (person_id);
-
-CREATE INDEX idx_person_film_work
-ON content.person_film_work (film_work_id);
 
 CREATE TABLE content.genre_film_work (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -46,36 +41,44 @@ CREATE TABLE content.genre_film_work (
 );
 
 
-CREATE INDEX idx_genre_id
-ON content.genre_film_work(genre_id);
-CREATE INDEX idx_genre_film_work_id
-ON content.genre_film_work(film_work_id);
-
 INSERT INTO content.genre (name, description)
-VALUES 
-('Action', 'Películas de acción'),
-('Drama', 'Películas dramáticas'),
-('Comedy', 'Películas de comedia');
+SELECT 
+    'Genre ' || i,
+    'Descripción del género ' || i
+FROM generate_series(1, 100) AS i;
 
 INSERT INTO content.person (full_name)
-VALUES 
-('Leonardo DiCaprio'),
-('Christopher Nolan'),
-('Robert Downey Jr.');
+SELECT 
+    'Person ' || i
+FROM generate_series(1, 100) AS i;
 
 INSERT INTO content.film_work (title, description, rating, type)
-VALUES
-('Inception', 'Sueños dentro de sueños', 9.0, 'movie'),
-('Iron Man', 'Origen de Iron Man', 8.5, 'movie');
+SELECT 
+    'Movie ' || i,
+    'Descripción de la película ' || i,
+    ROUND((RANDOM() * 10)::numeric, 2),
+    CASE 
+        WHEN i % 2 = 0 THEN 'movie'
+        ELSE 'series'
+    END
+FROM generate_series(1, 100) AS i;
 
 INSERT INTO content.person_film_work (person_id, film_work_id, role)
-SELECT p.id, f.id, 'actor'
-FROM content.person p, content.film_work f
-WHERE p.full_name = 'Leonardo DiCaprio'
-AND f.title = 'Inception';  
+SELECT 
+    p.id,
+    f.id,
+    CASE 
+        WHEN RANDOM() > 0.5 THEN 'actor'
+        ELSE 'director'
+    END
+FROM content.person p
+JOIN content.film_work f ON TRUE
+LIMIT 100;
 
 INSERT INTO content.genre_film_work (genre_id, film_work_id)
-SELECT g.id, f.id
-FROM content.genre g, content.film_work f
-WHERE g.name = 'Action'
-AND f.title = 'Inception';
+SELECT 
+    g.id,
+    f.id
+FROM content.genre g
+JOIN content.film_work f ON TRUE
+LIMIT 100;
